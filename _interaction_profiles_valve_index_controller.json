@@ -1,0 +1,178 @@
+{
+    "bindings": [
+        {
+            "action": "bbuttonleft",
+            "path": "/user/hand/left/input/b/click"
+        },
+        {
+            "action": "grippose",
+            "path": "/user/hand/left/input/grip/pose"
+        },
+        {
+            "action": "pose",
+            "path": "/user/hand/left/input/aim/pose"
+        },
+        {
+            "action": "trigger",
+            "path": "/user/hand/left/input/trigger"
+        },
+        {
+            "action": "touchpad",
+            "path": "/user/hand/left/input/trackpad"
+        },
+        {
+            "action": "joystick",
+            "path": "/user/hand/left/input/thumbstick"
+        },
+        {
+            "action": "joystickclick",
+            "path": "/user/hand/left/input/thumbstick/click"
+        },
+        {
+            "action": "abuttonleft",
+            "path": "/user/hand/left/input/a/click"
+        },
+        {
+            "action": "abuttontouchleft",
+            "path": "/user/hand/left/input/a/touch"
+        },
+        {
+            "action": "bbuttontouchleft",
+            "path": "/user/hand/left/input/b/touch"
+        },
+        {
+            "action": "thumbresttouchleft",
+            "path": "/user/hand/left/input/trackpad/touch"
+        },
+        {
+            "action": "haptic",
+            "path": "/user/hand/left/output/haptic"
+        },
+        {
+            "action": "grip",
+            "path": "/user/hand/left/input/squeeze/force"
+        },
+        {
+            "action": "touchpadclick",
+            "path": "/user/hand/left/input/trackpad/force"
+        },
+        {
+            "action": "systembutton",
+            "path": "/user/hand/left/input/trackpad/force"
+        },
+        {
+            "action": "thumbresttouchright",
+            "path": "/user/hand/right/input/trackpad/touch"
+        },
+        {
+            "action": "grippose",
+            "path": "/user/hand/right/input/grip/pose"
+        },
+        {
+            "action": "pose",
+            "path": "/user/hand/right/input/aim/pose"
+        },
+        {
+            "action": "trigger",
+            "path": "/user/hand/right/input/trigger"
+        },
+        {
+            "action": "joystick",
+            "path": "/user/hand/right/input/thumbstick"
+        },
+        {
+            "action": "joystickclick",
+            "path": "/user/hand/right/input/thumbstick/click"
+        },
+        {
+            "action": "abuttonright",
+            "path": "/user/hand/right/input/a/click"
+        },
+        {
+            "action": "bbuttonright",
+            "path": "/user/hand/right/input/b/click"
+        },
+        {
+            "action": "abuttontouchright",
+            "path": "/user/hand/right/input/a/touch"
+        },
+        {
+            "action": "bbuttontouchright",
+            "path": "/user/hand/right/input/b/touch"
+        },
+        {
+            "action": "haptic",
+            "path": "/user/hand/right/output/haptic"
+        },
+        {
+            "action": "grip",
+            "path": "/user/hand/right/input/squeeze/force"
+        },
+        {
+            "action": "systembutton",
+            "path": "/user/hand/right/input/trackpad/force"
+        },
+        {
+            "action": "touchpad",
+            "path": "/user/hand/right/input/trackpad"
+        }
+    ],
+    "vector2_associations": [
+        {
+            "activator": "thumbresttouchleft",
+            "modifier": "touchpad",
+            "outputs": [
+                {
+                    "action": "dpad_up",
+                    "value": {
+                        "x": 0.0,
+                        "y": 1.0
+                    }
+                },
+                {
+                    "action": "dpad_left",
+                    "value": {
+                        "x": -1.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "action": "dpad_right",
+                    "value": {
+                        "x": 1.0,
+                        "y": 0.0
+                    }
+                },
+                {
+                    "action": "dpad_down",
+                    "value": {
+                        "x": 0.0,
+                        "y": -1.0
+                    }
+                }
+            ],
+            "path": "/user/hand/left"
+        },
+        {
+            "activator": "thumbresttouchright",
+            "modifier": "touchpad",
+            "outputs": [
+                {
+                    "action": "bbuttonleft",
+                    "value": {
+                        "x": 0.0,
+                        "y": 1.0
+                    }
+                },
+                {
+                    "action": "abuttonleft",
+                    "value": {
+                        "x": 0.0,
+                        "y": -1.0
+                    }
+                }
+            ],
+            "path": "/user/hand/right"
+        }
+    ]
+}
