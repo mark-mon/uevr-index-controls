@@ -104,7 +104,7 @@ public:
 		
 		if(state == NULL) return;
         if(!m_VR->is_using_controllers()) return; // If not using controllers, none of this applies.
-
+        
         UEVR_InputSourceHandle LeftController = m_VR->get_left_joystick_source();
         UEVR_InputSourceHandle RightController = m_VR->get_right_joystick_source();
         static bool LeftGripDown = false;
@@ -116,6 +116,19 @@ public:
 		{
             UEVR_ActionHandle GripButton = m_VR->get_action_handle("/actions/default/in/Grip");
             UEVR_ActionHandle SystemButton = m_VR->get_action_handle("/actions/default/in/SystemButton");
+            
+            // First, we will try to see if we are using a gamepad. If start or select is active and the 
+            // openxr read for this is not, we assume gamepad mode and return.
+            if(state->Gamepad.wButtons & (XINPUT_GAMEPAD_START | XINPUT_GAMEPAD_BACK))
+            {
+                // This catches the case where we just set the controllers down and picked up the gamepad. The controllers are still
+                // active but we're not using them so we want to return and not do anything.
+                if (!m_VR->is_action_active(SystemButton, RightController) && !m_VR->is_action_active(SystemButton, LeftController))
+                {
+                    return;
+                }
+               
+            }
             
             // Clear xinput for start & select / menu & back.
             state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_START | XINPUT_GAMEPAD_BACK);
