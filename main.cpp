@@ -177,7 +177,11 @@ public:
             }
             else
             {
-                LeftGripDown = false;
+                if(LeftGripDown == true)
+                {
+                    LeftGripDown = false;
+                    m_VR->trigger_haptic_vibration(0.0f, 0.05f, 1.0f, 1000.0f, LeftController);					
+                }
             }
             
             // Trigger super short haptic on right grip
@@ -191,7 +195,11 @@ public:
             }
             else
             {
-                RightGripDown = false;
+                if(RightGripDown == true)
+                {
+                    RightGripDown = false;
+                    m_VR->trigger_haptic_vibration(0.0f, 0.05f, 1.0f, 1000.0f, RightController);					
+                }
             }
 		}
     }
