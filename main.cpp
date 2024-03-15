@@ -115,7 +115,8 @@ public:
 		if (m_OpenXr == true)
 		{
             UEVR_ActionHandle GripButton = m_VR->get_action_handle("/actions/default/in/Grip");
-            UEVR_ActionHandle SystemButton = m_VR->get_action_handle("/actions/default/in/SystemButton");
+            UEVR_ActionHandle ATouchLeft = m_VR->get_action_handle("/actions/default/in/AButtonTouchLeft");
+            UEVR_ActionHandle BTouchLeft = m_VR->get_action_handle("/actions/default/in/BButtonTouchLeft");
             
             // First, we will try to see if we are using a gamepad. If start or select is active and the 
             // openxr read for this is not, we assume gamepad mode and return.
@@ -123,7 +124,7 @@ public:
             {
                 // This catches the case where we just set the controllers down and picked up the gamepad. The controllers are still
                 // active but we're not using them so we want to return and not do anything.
-                if (!m_VR->is_action_active(SystemButton, RightController) && !m_VR->is_action_active(SystemButton, LeftController))
+                if (!m_VR->is_action_active(BTouchLeft, LeftController) && !m_VR->is_action_active(ATouchLeft, LeftController))
                 {
                     return;
                 }
@@ -134,15 +135,16 @@ public:
             state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_START | XINPUT_GAMEPAD_BACK);
             
             // First, let's try to differentiate start & select buttons based on if the systembutton comes from left or right controller
-            if (m_VR->is_action_active(SystemButton, RightController))
+            if (m_VR->is_action_active(ATouchLeft, LeftController))
             {
+                API::get()->log_info("TouchA Left Active");
                 state->Gamepad.wButtons |= XINPUT_GAMEPAD_START;
                 
                 // Trigger quick haptic when this is registered the first time.
                 if(StartDown == false)
                 {
                     StartDown = true;
-                    m_VR->trigger_haptic_vibration(0.0f, 0.05f, 1.0f, 1000.0f, RightController);	
+                    m_VR->trigger_haptic_vibration(0.0f, 0.05f, 1.0f, 1000.0f, LeftController);	
                 }
             }
             else
@@ -150,8 +152,9 @@ public:
                 StartDown = false;
             }
             
-            if (m_VR->is_action_active(SystemButton, LeftController))
+            if (m_VR->is_action_active(BTouchLeft, LeftController))
             {
+                API::get()->log_info("TouchB Left Active");
                 state->Gamepad.wButtons |= XINPUT_GAMEPAD_BACK;
                 // Trigger quick haptic when this is registered the first time.
                 if(SelectDown == false)
