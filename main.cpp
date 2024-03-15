@@ -6,6 +6,9 @@
 
 #include "uevr/Plugin.hpp"
 
+#define KEYDOWN false
+#define KEYUP true
+
 typedef struct _HAPTIC_TIMER_STRUCT
 {
     const UEVR_VRData* vr;
@@ -97,6 +100,15 @@ public:
         PLUGIN_LOG_ONCE("Post Slate Draw Window");
     }
 	
+    void send_key(WORD key, bool key_up) {
+        INPUT input;
+        ZeroMemory(&input, sizeof(INPUT));
+        input.type = INPUT_KEYBOARD;
+        input.ki.wVk = key;
+        if(key_up) input.ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, &input, sizeof(INPUT));
+    }
+
     //*******************************************************************************************
     // This is the controller input routine. Everything happens here.
     //*******************************************************************************************
@@ -111,12 +123,24 @@ public:
         static bool RightGripDown = false;
         static bool StartDown = false;
         static bool SelectDown = false;
+        static bool F1Down = false;
+        static bool F2Down = false;
+        static bool F3Down = false;
+        static bool F4Down = false;
+        static bool F5Down = false;
+        static bool F6Down = false;
+        static bool F7Down = false;
+        static bool LTDown = false;
+        static bool SwapLtRb = false;
+        
+        bool LeftShifting = false;
 
 		if (m_OpenXr == true)
 		{
             UEVR_ActionHandle GripButton = m_VR->get_action_handle("/actions/default/in/Grip");
             UEVR_ActionHandle ATouchLeft = m_VR->get_action_handle("/actions/default/in/AButtonTouchLeft");
             UEVR_ActionHandle BTouchLeft = m_VR->get_action_handle("/actions/default/in/BButtonTouchLeft");
+            UEVR_ActionHandle LeftShift  = m_VR->get_action_handle("/actions/default/in/ThumbrestTouchLeft");
             
             // First, we will try to see if we are using a gamepad. If start or select is active and the 
             // openxr read for this is not, we assume gamepad mode and return.
@@ -131,13 +155,127 @@ public:
                
             }
             
+            // clear all key down events from last pass
+            if(F1Down == true && !(state->Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+                send_key(VK_F1, KEYUP);
+                F1Down = false;
+            }
+            
+            if(F2Down == true && !(state->Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
+                send_key(VK_F2, KEYUP);
+                F2Down = false;
+            }
+            
+            if(F3Down == true && !(state->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)) {
+                send_key(VK_F3, KEYUP);
+                F3Down = false;
+            }
+
+            if(F4Down == true && (state->Gamepad.sThumbRY > -5000)) {
+                send_key(VK_F4, KEYUP);
+                F4Down = false;
+            }
+
+            if(F5Down == true && (state->Gamepad.sThumbRY < 5000)) {
+                send_key(VK_F5, KEYUP);
+                F5Down = false;
+            }
+
+            if(F6Down == true && (state->Gamepad.sThumbRX > -5000)) {
+                send_key(VK_F6, KEYUP);
+                F6Down = false;
+            }
+
+            if(F7Down == true && (state->Gamepad.sThumbRX < 5000)) {
+                send_key(VK_F7, KEYUP);
+                F7Down = false;
+            }
+
+            if(LTDown == true && state->Gamepad.bLeftTrigger < 200) {
+                LTDown = false;
+            }
+            
+            // Check for left shifting. This is when left trackpad touched but not start or back.
+            if(m_VR->is_action_active(LeftShift, LeftController) &&
+               !m_VR->is_action_active(ATouchLeft, LeftController) &&
+               !m_VR->is_action_active(BTouchLeft, LeftController)) {
+                LeftShifting = true;
+                
+                if(state->Gamepad.wButtons & XINPUT_GAMEPAD_A && F1Down == false) {
+                    F1Down = true;
+                    send_key(VK_F1, KEYDOWN);
+                    state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_A);
+                }
+                
+                if(state->Gamepad.wButtons & XINPUT_GAMEPAD_X && F2Down == false) {
+                    F2Down = true;
+                    send_key(VK_F2, KEYDOWN);
+                    state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_X);
+                }
+                
+                if(state->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB && F3Down == false) {
+                    F3Down = true;
+                    send_key(VK_F3, KEYDOWN);
+                    state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_RIGHT_THUMB);
+                }
+                
+                // Right stick up
+                if(state->Gamepad.sThumbRY <= -25000 && F4Down == false) {
+                    F4Down = true;
+                    send_key(VK_F4, KEYDOWN);
+                    state->Gamepad.sThumbRY = 0;
+                }
+
+                // Right stick down
+                if(state->Gamepad.sThumbRY >= 25000 && F5Down == false) {
+                    F5Down = true;
+                    send_key(VK_F5, KEYDOWN);
+                    state->Gamepad.sThumbRY = 0;
+                }
+
+                // Right stick left
+                if(state->Gamepad.sThumbRX <= -25000 && F6Down == false) {
+                    F6Down = true;
+                    send_key(VK_F6, KEYDOWN);
+                    state->Gamepad.sThumbRX = 0;
+                }
+
+                // Right stick right
+                if(state->Gamepad.sThumbRX >= 25000 && F7Down == false) {
+                    F7Down = true;
+                    send_key(VK_F7, KEYDOWN);
+                    state->Gamepad.sThumbRX = 0;
+                }
+                
+                // Left trigger - this is a switch LT, RB flag.
+                if(state->Gamepad.bLeftTrigger >= 200 && LTDown == false) {
+                    LTDown = true;
+                    SwapLtRb = !SwapLtRb;
+                    state->Gamepad.bLeftTrigger = 0;
+                    m_VR->trigger_haptic_vibration(0.0f, 0.5f, 1.0f, 1000.0f, LeftController);	
+                    m_VR->trigger_haptic_vibration(0.0f, 0.5f, 1.0f, 1000.0f, RightController);	
+                }
+                
+            }
+            
+            if(SwapLtRb == true) {
+                bool LT = (state->Gamepad.bLeftTrigger >= 200) ? true : false;
+                bool RB = (state->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) ? true : false;
+                
+                state->Gamepad.bLeftTrigger = (RB == true) ? 255 : 0;
+                if(LT == true) {
+                    state->Gamepad.wButtons |= (XINPUT_GAMEPAD_RIGHT_SHOULDER);
+                } else {
+                    state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_RIGHT_SHOULDER);
+                }
+            }
+            
             // Clear xinput for start & select / menu & back.
             state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_START | XINPUT_GAMEPAD_BACK);
             
-            // First, let's try to differentiate start & select buttons based on if the systembutton comes from left or right controller
-            if (m_VR->is_action_active(ATouchLeft, LeftController))
+            // First, let's try to differentiate start & select buttons based on if the systembutton comes from bottom or top of pad
+            if(m_VR->is_action_active(ATouchLeft, LeftController))
             {
-                API::get()->log_info("TouchA Left Active");
                 state->Gamepad.wButtons |= XINPUT_GAMEPAD_START;
                 
                 // Trigger quick haptic when this is registered the first time.
@@ -154,7 +292,6 @@ public:
             
             if (m_VR->is_action_active(BTouchLeft, LeftController))
             {
-                API::get()->log_info("TouchB Left Active");
                 state->Gamepad.wButtons |= XINPUT_GAMEPAD_BACK;
                 // Trigger quick haptic when this is registered the first time.
                 if(SelectDown == false)
