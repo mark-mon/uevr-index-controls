@@ -25,10 +25,15 @@ This is a must for anyone that has a Varjo Aero and index controllers
 as this is not a native steamvr device and performs much better on openxr. There may be other uses
 for this.
 
-The plugins must be copied into each game directory for UEVR at the moment as there is no global
-directory for plugins to handle all games.  
+This can be a global install or per game. To make it global:
+
+As of UEVR v1.04, you can create a global plugins folder and copy the json and plugin into them. Create a folder in %appdata%\UnrealVRMod\UEVR\Plugins and another in %appdata%\UnrealVRMod\UEVR\Profiles. Copy the dll into plugins and the json into profiles.
+
+For per game, 
+The plugins must be copied into each game directory in %appdata\UnrealVRMod\GAMEPROFILE\Plugins or %appdata%\UnrealVRMod\GAMEPROFILE\Profile
 
 
 The _interaction_profiles_valve_index_controller.json goes in the profile directory and fixes the controller interactions. 
+
 The IndexHapic.dll goes in the profile plugins directory.
 
