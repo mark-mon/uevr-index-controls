@@ -63,6 +63,7 @@ public:
     bool m_Zooming;
 	bool m_OpenXr;
 	bool m_OpenVr;
+    bool m_IndexIndicatorActive;
     RemapPlugin() = default;
     
     void on_dllmain(HANDLE handle) override {
@@ -70,6 +71,7 @@ public:
 
     void on_initialize() override {
       OutputDebugString("Initializing Index-Haptic\n");
+      m_IndexIndicatorActive = false;
          
       // This shows how to get to the API functions.
       m_Param = API::get()->param();
@@ -131,6 +133,8 @@ public:
         static bool F6Down = false;
         static bool F7Down = false;
         static bool LTDown = false;
+		static bool RBDown = false;
+        static bool RBShiftDown = false;
         static bool SwapLtRb = false;
         
         bool LeftShifting = false;
@@ -141,7 +145,10 @@ public:
             UEVR_ActionHandle ATouchLeft = m_VR->get_action_handle("/actions/default/in/AButtonTouchLeft");
             UEVR_ActionHandle BTouchLeft = m_VR->get_action_handle("/actions/default/in/BButtonTouchLeft");
             UEVR_ActionHandle LeftShift  = m_VR->get_action_handle("/actions/default/in/ThumbrestTouchLeft");
-            
+            UEVR_ActionHandle RightShift = m_VR->get_action_handle("/actions/default/in/ThumbrestTouchRight");
+#if 0
+            UEVR_ActionHandle RightGrip  = m_VR->get_action_handle("/actions/default/in/BButtonTouchRight");
+
             // First, we will try to see if we are using a gamepad. If start or select is active and the 
             // openxr read for this is not, we assume gamepad mode and return.
             if(state->Gamepad.wButtons & (XINPUT_GAMEPAD_START | XINPUT_GAMEPAD_BACK))
@@ -154,6 +161,17 @@ public:
                 }
                
             }
+           
+            // This is only here because I have vive controllers. The index controllers right grip is active just holding
+            // the controllers. So this whole plugin mechanism will be idle until the right grip is detected once.
+            // In the vive version of this plugin, it will be the opposite.
+            if(m_IndexIndicatorActive == false && m_VR->is_action_active(RightGrip, RightController)) {
+                API::get()->log_info("Index-Haptic: detected grip down, enabling index control.");
+                m_IndexIndicatorActive = true;
+            }
+            
+            if(m_IndexIndicatorActive == false) return;
+#endif
             
             // clear all key down events from last pass
             if(F1Down == true && !(state->Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
@@ -171,14 +189,14 @@ public:
                 F3Down = false;
             }
 
-            if(F4Down == true && (state->Gamepad.sThumbRY > -5000)) {
-                send_key(VK_F4, KEYUP);
-                F4Down = false;
-            }
-
-            if(F5Down == true && (state->Gamepad.sThumbRY < 5000)) {
+            if(F5Down == true && (state->Gamepad.sThumbRY > -5000)) {
                 send_key(VK_F5, KEYUP);
                 F5Down = false;
+            }
+
+            if(F4Down == true && (state->Gamepad.sThumbRY < 5000)) {
+                send_key(VK_F4, KEYUP);
+                F4Down = false;
             }
 
             if(F6Down == true && (state->Gamepad.sThumbRX > -5000)) {
@@ -193,6 +211,40 @@ public:
 
             if(LTDown == true && state->Gamepad.bLeftTrigger < 200) {
                 LTDown = false;
+            }
+            
+            if(RBShiftDown == true && !(state->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
+                RBShiftDown = false;
+            }
+            
+            // Dpad shift is added here since not working in UEVR for some reason.
+            if((m_VR->is_action_active(RightShift, RightController) &&
+               !(state->Gamepad.wButtons & (XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y)))) {
+                
+                // Left stick down
+                if(state->Gamepad.sThumbLY <= -25000) {
+                    state->Gamepad.sThumbLY = 0;
+                    state->Gamepad.wButtons |= (XINPUT_GAMEPAD_DPAD_DOWN);
+                }
+
+                // Left stick up
+                if(state->Gamepad.sThumbLY >= 25000) {
+                    state->Gamepad.sThumbLY = 0;
+                    state->Gamepad.wButtons |= (XINPUT_GAMEPAD_DPAD_UP);
+                }
+
+                // Left stick left
+                if(state->Gamepad.sThumbLX <= -25000) {
+                    state->Gamepad.sThumbLX = 0;
+                    state->Gamepad.wButtons |= (XINPUT_GAMEPAD_DPAD_LEFT);
+                }
+
+                // Left stick right
+                if(state->Gamepad.sThumbLX >= 25000) {
+                    state->Gamepad.sThumbLX = 0;
+                    state->Gamepad.wButtons |= (XINPUT_GAMEPAD_DPAD_RIGHT);
+                }
+               
             }
             
             // Check for left shifting. This is when left trackpad touched but not start or back.
@@ -219,17 +271,17 @@ public:
                     state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_RIGHT_THUMB);
                 }
                 
-                // Right stick up
-                if(state->Gamepad.sThumbRY <= -25000 && F4Down == false) {
-                    F4Down = true;
-                    send_key(VK_F4, KEYDOWN);
+                // Right stick down
+                if(state->Gamepad.sThumbRY <= -25000 && F5Down == false) {
+                    F5Down = true;
+                    send_key(VK_F5, KEYDOWN);
                     state->Gamepad.sThumbRY = 0;
                 }
 
-                // Right stick down
-                if(state->Gamepad.sThumbRY >= 25000 && F5Down == false) {
-                    F5Down = true;
-                    send_key(VK_F5, KEYDOWN);
+                // Right stick up
+                if(state->Gamepad.sThumbRY >= 25000 && F4Down == false) {
+                    F4Down = true;
+                    send_key(VK_F4, KEYDOWN);
                     state->Gamepad.sThumbRY = 0;
                 }
 
@@ -274,7 +326,7 @@ public:
             state->Gamepad.wButtons &= ~(XINPUT_GAMEPAD_START | XINPUT_GAMEPAD_BACK);
             
             // First, let's try to differentiate start & select buttons based on if the systembutton comes from bottom or top of pad
-            if(m_VR->is_action_active(ATouchLeft, LeftController))
+            if(m_VR->is_action_active_any_joystick(ATouchLeft))
             {
                 state->Gamepad.wButtons |= XINPUT_GAMEPAD_START;
                 
@@ -290,7 +342,7 @@ public:
                 StartDown = false;
             }
             
-            if (m_VR->is_action_active(BTouchLeft, LeftController))
+            if (m_VR->is_action_active_any_joystick(BTouchLeft))
             {
                 state->Gamepad.wButtons |= XINPUT_GAMEPAD_BACK;
                 // Trigger quick haptic when this is registered the first time.
@@ -323,7 +375,7 @@ public:
                     m_VR->trigger_haptic_vibration(0.0f, 0.05f, 1.0f, 1000.0f, LeftController);					
                 }
             }
-            
+                        
             // Trigger super short haptic on right grip
             if (m_VR->is_action_active(GripButton, RightController))
             {
