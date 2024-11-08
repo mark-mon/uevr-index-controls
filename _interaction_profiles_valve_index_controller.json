@@ -45,7 +45,7 @@
             "path": "/user/hand/left/input/squeeze/force"
         },
         {
-            "action": "touchpadclick",
+            "action": "abuttontouchleft",
             "path": "/user/hand/left/input/trackpad/force"
         },
         {
@@ -93,6 +93,10 @@
             "path": "/user/hand/right/input/squeeze/force"
         },
         {
+            "action": "bbuttontouchright",
+            "path": "/user/hand/right/input/squeeze"
+        },
+        {
             "action": "touchpad",
             "path": "/user/hand/right/input/trackpad"
         }
@@ -108,13 +112,6 @@
                         "x": 0.0,
                         "y": -1.0
                     }
-                },
-                {
-                    "action": "abuttontouchleft",
-                    "value": {
-                        "x": 0.0,
-                        "y": 1.0
-                    }
                 }
             ],
             "path": "/user/hand/left"
@@ -123,13 +120,6 @@
             "activator": "thumbresttouchright",
             "modifier": "touchpad",
             "outputs": [
-                {
-                    "action": "bbuttonleft",
-                    "value": {
-                        "x": 0.0,
-                        "y": 1.0
-                    }
-                },
                 {
                     "action": "abuttonleft",
                     "value": {
